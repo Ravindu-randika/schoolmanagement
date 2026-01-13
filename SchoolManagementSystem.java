@@ -1,171 +1,224 @@
+import java.io.*;
 import java.util.*;
 
 /*
- * ONE FILE School Management System
- * Console-based Java application
+ * ADVANCED SCHOOL MANAGEMENT SYSTEM
+ * Single Java File | Console Based | File Storage
  */
 
-public class SchoolManagementSystem {
+public class AdvancedSchoolManagementSystem {
 
     static Scanner sc = new Scanner(System.in);
 
-    // ===== DATA STORAGE =====
     static ArrayList<Student> students = new ArrayList<>();
     static ArrayList<Teacher> teachers = new ArrayList<>();
 
-    // ===== MAIN METHOD =====
+    static final String STUDENT_FILE = "students.dat";
+    static final String TEACHER_FILE = "teachers.dat";
+
+    // ================= MAIN =================
     public static void main(String[] args) {
+        loadData();
+        login();
+        saveData();
+    }
+
+    // ================= LOGIN =================
+    static void login() {
+        System.out.println("===== SCHOOL MANAGEMENT LOGIN =====");
+        System.out.print("Username: ");
+        String user = sc.nextLine();
+        System.out.print("Password: ");
+        String pass = sc.nextLine();
+
+        if (user.equals("admin") && pass.equals("admin123")) {
+            adminMenu();
+        } else if (user.equals("teacher") && pass.equals("teach123")) {
+            teacherMenu();
+        } else {
+            System.out.println("Invalid login!");
+        }
+    }
+
+    // ================= ADMIN MENU =================
+    static void adminMenu() {
         while (true) {
-            System.out.println("\n===== SCHOOL MANAGEMENT SYSTEM =====");
+            System.out.println("\n===== ADMIN MENU =====");
             System.out.println("1. Add Student");
             System.out.println("2. View Students");
             System.out.println("3. Add Teacher");
             System.out.println("4. View Teachers");
-            System.out.println("5. Add Marks to Student");
-            System.out.println("6. View Student Report");
-            System.out.println("0. Exit");
-            System.out.print("Choose option: ");
+            System.out.println("5. Remove Student");
+            System.out.println("0. Logout");
+            System.out.print("Choice: ");
 
-            int choice = sc.nextInt();
+            int ch = sc.nextInt();
             sc.nextLine();
 
-            switch (choice) {
+            switch (ch) {
                 case 1 -> addStudent();
                 case 2 -> viewStudents();
                 case 3 -> addTeacher();
                 case 4 -> viewTeachers();
-                case 5 -> addMarks();
-                case 6 -> viewStudentReport();
-                case 0 -> {
-                    System.out.println("Exiting System...");
-                    System.exit(0);
-                }
-                default -> System.out.println("Invalid choice!");
+                case 5 -> removeStudent();
+                case 0 -> { return; }
+                default -> System.out.println("Invalid option!");
             }
         }
     }
 
-    // ===== STUDENT METHODS =====
+    // ================= TEACHER MENU =================
+    static void teacherMenu() {
+        while (true) {
+            System.out.println("\n===== TEACHER MENU =====");
+            System.out.println("1. Add Marks");
+            System.out.println("2. Mark Attendance");
+            System.out.println("3. Student Report");
+            System.out.println("0. Logout");
+            System.out.print("Choice: ");
+
+            int ch = sc.nextInt();
+            sc.nextLine();
+
+            switch (ch) {
+                case 1 -> addMarks();
+                case 2 -> markAttendance();
+                case 3 -> studentReport();
+                case 0 -> { return; }
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+    // ================= STUDENT =================
     static void addStudent() {
-        System.out.print("Enter Student ID: ");
+        System.out.print("ID: ");
         int id = sc.nextInt();
         sc.nextLine();
 
-        System.out.print("Enter Student Name: ");
+        System.out.print("Name: ");
         String name = sc.nextLine();
 
-        System.out.print("Enter Grade/Class: ");
+        System.out.print("Class: ");
         String grade = sc.nextLine();
 
         students.add(new Student(id, name, grade));
-        System.out.println("Student added successfully!");
+        System.out.println("Student Added!");
     }
 
     static void viewStudents() {
-        if (students.isEmpty()) {
-            System.out.println("No students found.");
-            return;
-        }
-
-        System.out.println("\n--- Student List ---");
-        for (Student s : students) {
-            System.out.println(s);
-        }
+        students.forEach(System.out::println);
     }
 
-    // ===== TEACHER METHODS =====
+    static void removeStudent() {
+        System.out.print("Student ID: ");
+        int id = sc.nextInt();
+        students.removeIf(s -> s.id == id);
+        System.out.println("Student Removed!");
+    }
+
+    // ================= TEACHER =================
     static void addTeacher() {
-        System.out.print("Enter Teacher ID: ");
+        System.out.print("ID: ");
         int id = sc.nextInt();
         sc.nextLine();
 
-        System.out.print("Enter Teacher Name: ");
+        System.out.print("Name: ");
         String name = sc.nextLine();
 
-        System.out.print("Enter Subject: ");
+        System.out.print("Subject: ");
         String subject = sc.nextLine();
 
         teachers.add(new Teacher(id, name, subject));
-        System.out.println("Teacher added successfully!");
+        System.out.println("Teacher Added!");
     }
 
     static void viewTeachers() {
-        if (teachers.isEmpty()) {
-            System.out.println("No teachers found.");
-            return;
-        }
-
-        System.out.println("\n--- Teacher List ---");
-        for (Teacher t : teachers) {
-            System.out.println(t);
-        }
+        teachers.forEach(System.out::println);
     }
 
-    // ===== MARKS =====
+    // ================= ACADEMIC =================
     static void addMarks() {
-        System.out.print("Enter Student ID: ");
-        int id = sc.nextInt();
+        Student s = findStudent();
+        if (s == null) return;
 
-        Student student = findStudentById(id);
-        if (student == null) {
-            System.out.println("Student not found!");
-            return;
-        }
-
-        System.out.print("Enter Subject: ");
-        sc.nextLine();
+        System.out.print("Subject: ");
         String subject = sc.nextLine();
-
-        System.out.print("Enter Marks: ");
+        System.out.print("Marks: ");
         int marks = sc.nextInt();
 
-        student.marks.put(subject, marks);
-        System.out.println("Marks added successfully!");
+        s.marks.put(subject, marks);
+        System.out.println("Marks Saved!");
     }
 
-    static void viewStudentReport() {
-        System.out.print("Enter Student ID: ");
+    static void markAttendance() {
+        Student s = findStudent();
+        if (s == null) return;
+
+        System.out.print("Present? (true/false): ");
+        boolean present = sc.nextBoolean();
+        s.attendance.add(present);
+
+        System.out.println("Attendance Updated!");
+    }
+
+    static void studentReport() {
+        Student s = findStudent();
+        if (s == null) return;
+
+        System.out.println("\n===== REPORT =====");
+        System.out.println(s);
+
+        System.out.println("Marks:");
+        s.marks.forEach((k, v) -> System.out.println(k + " : " + v));
+
+        long present = s.attendance.stream().filter(a -> a).count();
+        System.out.println("Attendance: " + present + "/" + s.attendance.size());
+    }
+
+    static Student findStudent() {
+        System.out.print("Student ID: ");
         int id = sc.nextInt();
+        sc.nextLine();
 
-        Student student = findStudentById(id);
-        if (student == null) {
-            System.out.println("Student not found!");
-            return;
-        }
-
-        System.out.println("\n===== STUDENT REPORT =====");
-        System.out.println("ID: " + student.id);
-        System.out.println("Name: " + student.name);
-        System.out.println("Class: " + student.grade);
-
-        if (student.marks.isEmpty()) {
-            System.out.println("No marks available.");
-            return;
-        }
-
-        int total = 0;
-        for (Map.Entry<String, Integer> e : student.marks.entrySet()) {
-            System.out.println(e.getKey() + ": " + e.getValue());
-            total += e.getValue();
-        }
-
-        double avg = total / (double) student.marks.size();
-        System.out.println("Average Marks: " + avg);
-    }
-
-    static Student findStudentById(int id) {
-        for (Student s : students) {
+        for (Student s : students)
             if (s.id == id) return s;
-        }
+
+        System.out.println("Student Not Found!");
         return null;
     }
 
-    // ===== INNER CLASSES =====
-    static class Student {
+    // ================= FILE HANDLING =================
+    static void saveData() {
+        try {
+            ObjectOutputStream o1 = new ObjectOutputStream(new FileOutputStream(STUDENT_FILE));
+            o1.writeObject(students);
+            o1.close();
+
+            ObjectOutputStream o2 = new ObjectOutputStream(new FileOutputStream(TEACHER_FILE));
+            o2.writeObject(teachers);
+            o2.close();
+        } catch (Exception ignored) {}
+    }
+
+    static void loadData() {
+        try {
+            ObjectInputStream i1 = new ObjectInputStream(new FileInputStream(STUDENT_FILE));
+            students = (ArrayList<Student>) i1.readObject();
+            i1.close();
+
+            ObjectInputStream i2 = new ObjectInputStream(new FileInputStream(TEACHER_FILE));
+            teachers = (ArrayList<Teacher>) i2.readObject();
+            i2.close();
+        } catch (Exception ignored) {}
+    }
+
+    // ================= CLASSES =================
+    static class Student implements Serializable {
         int id;
-        String name;
-        String grade;
+        String name, grade;
         HashMap<String, Integer> marks = new HashMap<>();
+        ArrayList<Boolean> attendance = new ArrayList<>();
 
         Student(int id, String name, String grade) {
             this.id = id;
@@ -174,14 +227,13 @@ public class SchoolManagementSystem {
         }
 
         public String toString() {
-            return "ID: " + id + ", Name: " + name + ", Class: " + grade;
+            return id + " | " + name + " | Class " + grade;
         }
     }
 
-    static class Teacher {
+    static class Teacher implements Serializable {
         int id;
-        String name;
-        String subject;
+        String name, subject;
 
         Teacher(int id, String name, String subject) {
             this.id = id;
@@ -190,7 +242,7 @@ public class SchoolManagementSystem {
         }
 
         public String toString() {
-            return "ID: " + id + ", Name: " + name + ", Subject: " + subject;
+            return id + " | " + name + " | " + subject;
         }
     }
 }
